@@ -6,6 +6,7 @@
 //  Copyright © 2019 Jonathan Yee. All rights reserved.
 //
 
+import MobileCoreServices
 import Photos
 import UIKit
 
@@ -40,12 +41,23 @@ class ViewController: UIViewController {
         let photoAuthorizationStatus = PHPhotoLibrary.authorizationStatus()
         switch photoAuthorizationStatus {
             case .authorized:
-                // Access is granted by user.
+                if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
+                    DispatchQueue.main.async {
+                        let imagePicker = UIImagePickerController()
+                        imagePicker.sourceType = .photoLibrary
+                        imagePicker.mediaTypes = [kUTTypeMovie as String]
+                        imagePicker.allowsEditing = false
+                        imagePicker.delegate = self
+
+                        self.present(imagePicker, animated: true, completion: nil)
+                    }
+                }
                 break
             case .notDetermined:
                 PHPhotoLibrary.requestAuthorization { _ in
                     self.checkPhotoStatus()
                 }
+                break
             default:
                 // go to settings
                 DispatchQueue.main.async {
@@ -74,10 +86,29 @@ class ViewController: UIViewController {
         }
         alertController.addAction(settingsAction)
 
-
-
         self.present(alertController, animated: true, completion: nil)
     }
 
 }
 
+extension ViewController: UIImagePickerControllerDelegate {
+
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
+    }
+
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        guard
+            let mediaType = info[UIImagePickerController.InfoKey.mediaType] as? NSString,
+            mediaType == kUTTypeMovie,
+            let mediaURL = info[UIImagePickerController.InfoKey.mediaURL] as? URL
+        else {
+            return
+        }
+
+        picker.dismiss(animated: true)
+    }
+
+}
+
+extension ViewController: UINavigationControllerDelegate { }
