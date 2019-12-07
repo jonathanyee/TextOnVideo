@@ -6,6 +6,7 @@
 //  Copyright © 2019 Jonathan Yee. All rights reserved.
 //
 
+import Photos
 import UIKit
 
 class ViewController: UIViewController {
@@ -32,7 +33,50 @@ class ViewController: UIViewController {
     }
 
     @objc private func startPhotoPicker() {
+        self.checkPhotoStatus()
+    }
 
+    private func checkPhotoStatus() {
+        let photoAuthorizationStatus = PHPhotoLibrary.authorizationStatus()
+        switch photoAuthorizationStatus {
+            case .authorized:
+                // Access is granted by user.
+                break
+            case .notDetermined:
+                PHPhotoLibrary.requestAuthorization { _ in
+                    self.checkPhotoStatus()
+                }
+            default:
+                // go to settings
+                DispatchQueue.main.async {
+                    self.askUserToEnablePhotoPermission()
+                }
+
+                break
+        }
+    }
+
+    private func askUserToEnablePhotoPermission() {
+        let alertController = UIAlertController (title: "Photo Permission", message: "Please enable photo permissions in settings to save text on your videos.", preferredStyle: .alert)
+
+        let cancelAction = UIAlertAction(title: "Cancel", style: .default, handler: nil)
+        alertController.addAction(cancelAction)
+
+        let settingsAction = UIAlertAction(title: "Settings", style: .default) { _ in
+
+            guard let settingsUrl = URL(string: UIApplication.openSettingsURLString) else {
+                return
+            }
+
+            if UIApplication.shared.canOpenURL(settingsUrl) {
+                UIApplication.shared.open(settingsUrl)
+            }
+        }
+        alertController.addAction(settingsAction)
+
+
+
+        self.present(alertController, animated: true, completion: nil)
     }
 
 }
