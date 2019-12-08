@@ -107,6 +107,21 @@ extension ViewController: UIImagePickerControllerDelegate {
         }
 
         picker.dismiss(animated: true)
+
+        let alert = UIAlertController(title: "Overlay Text", message: "Input text to overlay on your video", preferredStyle: .alert)
+        alert.addTextField { textField in
+            textField.placeholder = "overlay text"
+        }
+
+        let okAction = UIAlertAction(title: "OK", style: .default) { [weak alert] _ in
+            if let textField = alert?.textFields?.first,
+                let text = textField.text {
+                print(text)
+                // overlay text on video
+            }
+        }
+        alert.addAction(okAction)
+        self.present(alert, animated: true)
     }
 
 }
