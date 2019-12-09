@@ -57,35 +57,7 @@ struct VideoManager {
             print(error.localizedDescription)
         }
 
-        // use AVAssetExportSession to export video
-        if let assetExport = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality) {
-            assetExport.videoComposition = layercomposition
-            assetExport.outputFileType = AVFileType.mov
-            assetExport.outputURL = movieDestinationUrl
-
-            assetExport.exportAsynchronously {
-                switch assetExport.status {
-                    case  .failed:
-                        if let error = assetExport.error {
-                            self.onFailure?(error)
-                            print("failed \(error)")
-                        }
-                    case .cancelled:
-                        if let error = assetExport.error {
-                            self.onFailure?(error)
-                            print("cancelled \(error)")
-                        }
-                    default:
-                        print("Movie complete")
-
-                        OperationQueue.main.addOperation {
-                            DispatchQueue.main.async {
-                                self.onSuccess?(movieDestinationUrl)
-                            }
-                        }
-                }
-            }
-        }
+        self.saveVideo(composition: composition, layerComposition: layerComposition, url: movieDestinationUrl)
     }
 
     private func createComposition(from url: URL) -> AVMutableComposition {
@@ -129,6 +101,37 @@ struct VideoManager {
         textLayer.frame = CGRect(x: 0, y: 50, width: size.width, height: size.height / 6)
 
         return textLayer
+    }
+
+    private func saveVideo(composition: AVMutableComposition, layerComposition: AVMutableVideoComposition, url: URL) {
+        if let assetExport = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality) {
+            assetExport.videoComposition = layerComposition
+            assetExport.outputFileType = AVFileType.mov
+            assetExport.outputURL = url
+
+            assetExport.exportAsynchronously {
+                switch assetExport.status {
+                    case  .failed:
+                        if let error = assetExport.error {
+                            self.onFailure?(error)
+                            print("failed \(error)")
+                        }
+                    case .cancelled:
+                        if let error = assetExport.error {
+                            self.onFailure?(error)
+                            print("cancelled \(error)")
+                        }
+                    default:
+                        print("Movie complete")
+
+                        OperationQueue.main.addOperation {
+                            DispatchQueue.main.async {
+                                self.onSuccess?(url)
+                            }
+                        }
+                }
+            }
+        }
     }
 
 }
