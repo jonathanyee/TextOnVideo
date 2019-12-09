@@ -19,17 +19,9 @@ struct VideoManager {
         let composition = self.createComposition(from: url)
         let videoTrack = composition.tracks(withMediaType: AVMediaType.video)[0]
 
-        // Watermark Effect
         let size = videoTrack.naturalSize
 
-        // create text Layer
-        let titleLayer = CATextLayer()
-        titleLayer.backgroundColor = UIColor.clear.cgColor
-        titleLayer.string = text
-        titleLayer.font = UIFont(name: "Helvetica", size: 28)
-        titleLayer.shadowOpacity = 0.5
-        titleLayer.alignmentMode = .center
-        titleLayer.frame = CGRect(x: 0, y: 50, width: size.width, height: size.height / 6)
+        let textLayer = self.createTextLayer(with: text, size: size)
 
         let videolayer = CALayer()
         videolayer.frame = CGRect(x: 0, y: 0, width: size.width, height: size.height)
@@ -37,7 +29,7 @@ struct VideoManager {
         let parentlayer = CALayer()
         parentlayer.frame = CGRect(x: 0, y: 0, width: size.width, height: size.height)
         parentlayer.addSublayer(videolayer)
-        parentlayer.addSublayer(titleLayer)
+        parentlayer.addSublayer(textLayer)
 
         let layercomposition = AVMutableVideoComposition()
         layercomposition.frameDuration = CMTimeMake(value: 1, timescale: 30)
@@ -66,7 +58,7 @@ struct VideoManager {
         }
 
         // use AVAssetExportSession to export video
-        if let assetExport = AVAssetExportSession(asset: composition, presetName:AVAssetExportPresetHighestQuality) {
+        if let assetExport = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality) {
             assetExport.videoComposition = layercomposition
             assetExport.outputFileType = AVFileType.mov
             assetExport.outputURL = movieDestinationUrl
@@ -125,6 +117,18 @@ struct VideoManager {
         }
 
         return composition
+    }
+
+    private func createTextLayer(with text: String, size: CGSize) -> CATextLayer {
+        let textLayer = CATextLayer()
+        textLayer.backgroundColor = UIColor.clear.cgColor
+        textLayer.string = text
+        textLayer.font = UIFont(name: "Helvetica", size: 28)
+        textLayer.shadowOpacity = 0.5
+        textLayer.alignmentMode = .center
+        textLayer.frame = CGRect(x: 0, y: 50, width: size.width, height: size.height / 6)
+
+        return textLayer
     }
 
 }
