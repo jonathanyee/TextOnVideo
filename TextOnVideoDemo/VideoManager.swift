@@ -31,18 +31,18 @@ struct VideoManager {
         parentlayer.addSublayer(videolayer)
         parentlayer.addSublayer(textLayer)
 
-        let layercomposition = AVMutableVideoComposition()
-        layercomposition.frameDuration = CMTimeMake(value: 1, timescale: 30)
-        layercomposition.renderSize = size
-        layercomposition.animationTool = AVVideoCompositionCoreAnimationTool(postProcessingAsVideoLayer: videolayer, in: parentlayer)
+        let layerComposition = AVMutableVideoComposition()
+        layerComposition.frameDuration = CMTimeMake(value: 1, timescale: 30)
+        layerComposition.renderSize = size
+        layerComposition.animationTool = AVVideoCompositionCoreAnimationTool(postProcessingAsVideoLayer: videolayer, in: parentlayer)
 
         // instruction for watermark
         let instruction = AVMutableVideoCompositionInstruction()
         instruction.timeRange = CMTimeRangeMake(start: CMTime.zero, duration: composition.duration)
 
-        let layerinstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: videoTrack)
-        instruction.layerInstructions = [layerinstruction]
-        layercomposition.instructions = [instruction]
+        let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: videoTrack)
+        instruction.layerInstructions = [layerInstruction]
+        layerComposition.instructions = [instruction]
 
         //  create new file to receive data
         let directoryPaths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
