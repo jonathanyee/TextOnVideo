@@ -31,7 +31,9 @@ struct VideoManager {
         parentlayer.addSublayer(videolayer)
         parentlayer.addSublayer(textLayer)
 
-        let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: videoTrack)
+        let videoAsset = AVURLAsset(url: url, options: nil)
+        //AVMutableVideoCompositionLayerInstruction(assetTrack: videoTrack)
+        let layerInstruction = self.videoCompositionInstruction(videoTrack, asset: videoAsset)
 
         let instruction = AVMutableVideoCompositionInstruction()
         instruction.timeRange = CMTimeRangeMake(start: CMTime.zero, duration: composition.duration)
@@ -78,7 +80,7 @@ struct VideoManager {
 
             do {
                 try compositionvideoTrack.insertTimeRange(videoTimeRange, of: videoTrack, at: CMTime.zero)
-                compositionvideoTrack.preferredTransform = videoTrack.preferredTransform
+//                compositionvideoTrack.preferredTransform = videoTrack.preferredTransform
 
                 try compositionAudioTrack.insertTimeRange(audioTimeRange, of: audioTrack, at: CMTime.zero)
                 compositionvideoTrack.preferredTransform = audioTrack.preferredTransform
@@ -101,6 +103,60 @@ struct VideoManager {
         textLayer.frame = CGRect(x: 0, y: 50, width: size.width, height: size.height / 6)
 
         return textLayer
+    }
+
+    private func orientationFromTransform(_ transform: CGAffineTransform) -> (orientation: UIImage.Orientation, isPortrait: Bool) {
+        var assetOrientation = UIImage.Orientation.up
+        var isPortrait = false
+
+        if transform.a == 0 && transform.b == 1.0 && transform.c == -1.0 && transform.d == 0 {
+            assetOrientation = .right
+            isPortrait = true
+        } else if transform.a == 0 && transform.b == 1.0 && transform.c == 1.0 && transform.d == 0 {
+            assetOrientation = .rightMirrored
+            isPortrait = true
+        } else if transform.a == 0 && transform.b == -1.0 && transform.c == 1.0 && transform.d == 0 {
+            assetOrientation = .left
+            isPortrait = true
+        } else if transform.a == 0 && transform.b == -1.0 && transform.c == -1.0 && transform.d == 0 {
+            assetOrientation = .leftMirrored
+            isPortrait = true
+        } else if transform.a == 1.0 && transform.b == 0 && transform.c == 0 && transform.d == 1.0 {
+            assetOrientation = .up
+        } else if transform.a == -1.0 && transform.b == 0 && transform.c == 0 && transform.d == -1.0 {
+            assetOrientation = .down
+        }
+        return (assetOrientation, isPortrait)
+    }
+
+    private func videoCompositionInstruction(_ track: AVCompositionTrack, asset: AVAsset)
+      -> AVMutableVideoCompositionLayerInstruction {
+        let instruction = AVMutableVideoCompositionLayerInstruction(assetTrack: track)
+        let assetTrack = asset.tracks(withMediaType: .video)[0]
+        let transform = assetTrack.preferredTransform
+        let assetInfo = self.orientationFromTransform(transform)
+
+        var scaleToFitRatio = UIScreen.main.bounds.width / assetTrack.naturalSize.width
+
+        if assetInfo.isPortrait {
+            scaleToFitRatio = UIScreen.main.bounds.width / assetTrack.naturalSize.height
+            let scaleFactor = CGAffineTransform(scaleX: scaleToFitRatio, y: scaleToFitRatio)
+            instruction.setTransform(assetTrack.preferredTransform.concatenating(scaleFactor), at: CMTime.zero)
+        } else {
+            let scaleFactor = CGAffineTransform(scaleX: scaleToFitRatio, y: scaleToFitRatio)
+            var concat = assetTrack.preferredTransform.concatenating(scaleFactor)
+                .concatenating(CGAffineTransform(translationX: 0, y: UIScreen.main.bounds.width / 2))
+
+            if assetInfo.orientation == .down {
+                let fixUpsideDown = CGAffineTransform(rotationAngle: CGFloat(Double.pi))
+                let windowBounds = UIScreen.main.bounds
+                let yFix = assetTrack.naturalSize.height + windowBounds.height
+                let centerFix = CGAffineTransform(translationX: assetTrack.naturalSize.width, y: yFix)
+                concat = fixUpsideDown.concatenating(centerFix).concatenating(scaleFactor)
+            }
+            instruction.setTransform(concat, at: CMTime.zero)
+        }
+        return instruction
     }
 
     private func saveVideo(composition: AVMutableComposition, layerComposition: AVMutableVideoComposition, url: URL) {
