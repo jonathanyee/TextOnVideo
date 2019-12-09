@@ -16,32 +16,8 @@ struct VideoManager {
     var onFailure: ((Error) -> Void)?
 
     func drawTextOnVideo(url: URL, text: String) {
-        let composition = AVMutableComposition()
-        let videoAsset = AVURLAsset(url: url, options: nil)
-
-        let videoTracks =  videoAsset.tracks(withMediaType: AVMediaType.video)
-        let videoTrack = videoTracks[0]
-
-        let audioTracks = videoAsset.tracks(withMediaType: AVMediaType.audio)
-        let audioTrack = audioTracks[0]
-        let audioTimeRange = CMTimeRangeMake(start: CMTime.zero, duration: videoAsset.duration)
-
-        if let compositionvideoTrack = composition.addMutableTrack(withMediaType: AVMediaType.video, preferredTrackID: CMPersistentTrackID()),
-            let compositionAudioTrack = composition.addMutableTrack(withMediaType: AVMediaType.audio, preferredTrackID: CMPersistentTrackID()) {
-
-            let videoTimeRange = CMTimeRangeMake(start: CMTime.zero, duration: videoAsset.duration)
-
-            do {
-                try compositionvideoTrack.insertTimeRange(videoTimeRange, of: videoTrack, at: CMTime.zero)
-                compositionvideoTrack.preferredTransform = videoTrack.preferredTransform
-
-                try compositionAudioTrack.insertTimeRange(audioTimeRange, of: audioTrack, at: CMTime.zero)
-                compositionvideoTrack.preferredTransform = audioTrack.preferredTransform
-            } catch {
-                self.onFailure?(error)
-                print(error)
-            }
-        }
+        let composition = self.createComposition(from: url)
+        let videoTrack = composition.tracks(withMediaType: AVMediaType.video)[0]
 
         // Watermark Effect
         let size = videoTrack.naturalSize
@@ -71,8 +47,8 @@ struct VideoManager {
         // instruction for watermark
         let instruction = AVMutableVideoCompositionInstruction()
         instruction.timeRange = CMTimeRangeMake(start: CMTime.zero, duration: composition.duration)
-        let videotrack = composition.tracks(withMediaType: AVMediaType.video)[0]
-        let layerinstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: videotrack)
+
+        let layerinstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: videoTrack)
         instruction.layerInstructions = [layerinstruction]
         layercomposition.instructions = [instruction]
 
@@ -119,4 +95,36 @@ struct VideoManager {
             }
         }
     }
+
+    private func createComposition(from url: URL) -> AVMutableComposition {
+        let composition = AVMutableComposition()
+        let videoAsset = AVURLAsset(url: url, options: nil)
+
+        let videoTracks = videoAsset.tracks(withMediaType: AVMediaType.video)
+        let videoTrack = videoTracks[0]
+
+        let audioTracks = videoAsset.tracks(withMediaType: AVMediaType.audio)
+        let audioTrack = audioTracks[0]
+        let audioTimeRange = CMTimeRangeMake(start: CMTime.zero, duration: videoAsset.duration)
+
+        if let compositionvideoTrack = composition.addMutableTrack(withMediaType: AVMediaType.video, preferredTrackID: CMPersistentTrackID()),
+            let compositionAudioTrack = composition.addMutableTrack(withMediaType: AVMediaType.audio, preferredTrackID: CMPersistentTrackID()) {
+
+            let videoTimeRange = CMTimeRangeMake(start: CMTime.zero, duration: videoAsset.duration)
+
+            do {
+                try compositionvideoTrack.insertTimeRange(videoTimeRange, of: videoTrack, at: CMTime.zero)
+                compositionvideoTrack.preferredTransform = videoTrack.preferredTransform
+
+                try compositionAudioTrack.insertTimeRange(audioTimeRange, of: audioTrack, at: CMTime.zero)
+                compositionvideoTrack.preferredTransform = audioTrack.preferredTransform
+            } catch {
+                self.onFailure?(error)
+                print(error)
+            }
+        }
+
+        return composition
+    }
+
 }
