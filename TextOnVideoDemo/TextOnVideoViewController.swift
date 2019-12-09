@@ -13,12 +13,15 @@ import UIKit
 class TextOnVideoViewController: UIViewController {
 
     private let textOnVideoView = TextOnVideoView()
+
     private var photoAccessManager = PhotoAccessManager()
+    private var videoManager = VideoManager()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupView()
         self.setupPhotoManager()
+        self.setupVideoManager()
     }
 
     private func setupView() {
@@ -50,6 +53,13 @@ class TextOnVideoViewController: UIViewController {
 
         self.photoAccessManager.onAskUserToEnablePhotoPermission = { [weak self] in
             self?.askUserToEnablePhotoPermission()
+        }
+    }
+
+    private func setupVideoManager() {
+        self.videoManager.onSuccess = { [weak self] url in
+            self?.textOnVideoView.activityIndicator.stopAnimating()
+            self?.saveVideo(url: url)
         }
     }
 
@@ -96,119 +106,6 @@ class TextOnVideoViewController: UIViewController {
             self.present(alert, animated: true)
         }
     }
-
-    private func drawTextOnVideo(url: URL, text: String) {
-        let composition = AVMutableComposition()
-        let vidAsset = AVURLAsset(url: url, options: nil)
-
-        // get video track
-        let vtrack =  vidAsset.tracks(withMediaType: AVMediaType.video)
-        let videoTrack = vtrack[0]
-
-        // audio
-        let atrack =  vidAsset.tracks(withMediaType: AVMediaType.audio)
-        let audioTrack:AVAssetTrack = atrack[0]
-        let audio_timerange = CMTimeRangeMake(start: CMTime.zero, duration: vidAsset.duration)
-
-        if let compositionvideoTrack = composition.addMutableTrack(withMediaType: AVMediaType.video, preferredTrackID: CMPersistentTrackID()) {
-
-            let vid_timerange = CMTimeRangeMake(start: CMTime.zero, duration: vidAsset.duration)
-
-            do {
-                try compositionvideoTrack.insertTimeRange(vid_timerange, of: videoTrack, at: CMTime.zero)
-            } catch {
-                print(error)
-            }
-
-            compositionvideoTrack.preferredTransform = videoTrack.preferredTransform
-
-            if let compositionAudioTrack:AVMutableCompositionTrack = composition.addMutableTrack(withMediaType: AVMediaType.audio, preferredTrackID: CMPersistentTrackID()) {
-
-                do {
-                    try compositionAudioTrack.insertTimeRange(audio_timerange, of: audioTrack, at: CMTime.zero)
-                } catch {
-                    print(error)
-                }
-
-                compositionvideoTrack.preferredTransform = audioTrack.preferredTransform
-            }
-        }
-
-        // Watermark Effect
-        let size = videoTrack.naturalSize
-
-        // create text Layer
-        let titleLayer = CATextLayer()
-        titleLayer.backgroundColor = UIColor.clear.cgColor
-        titleLayer.string = text
-        titleLayer.font = UIFont(name: "Helvetica", size: 28)
-        titleLayer.shadowOpacity = 0.5
-        titleLayer.alignmentMode = .center
-        titleLayer.frame = CGRect(x: 0, y: 50, width: size.width, height: size.height / 6)
-
-        let videolayer = CALayer()
-        videolayer.frame = CGRect(x: 0, y: 0, width: size.width, height: size.height)
-
-        let parentlayer = CALayer()
-        parentlayer.frame = CGRect(x: 0, y: 0, width: size.width, height: size.height)
-        parentlayer.addSublayer(videolayer)
-        parentlayer.addSublayer(titleLayer)
-
-        let layercomposition = AVMutableVideoComposition()
-        layercomposition.frameDuration = CMTimeMake(value: 1, timescale: 30)
-        layercomposition.renderSize = size
-        layercomposition.animationTool = AVVideoCompositionCoreAnimationTool(postProcessingAsVideoLayer: videolayer, in: parentlayer)
-
-        // instruction for watermark
-        let instruction = AVMutableVideoCompositionInstruction()
-        instruction.timeRange = CMTimeRangeMake(start: CMTime.zero, duration: composition.duration)
-        let videotrack = composition.tracks(withMediaType: AVMediaType.video)[0]
-        let layerinstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: videotrack)
-        instruction.layerInstructions = [layerinstruction]
-        layercomposition.instructions = [instruction]
-
-        //  create new file to receive data
-        let dirPaths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
-        let docsDir = dirPaths[0]
-        let movieFilePath = "\(docsDir)/result.mov"
-        let movieDestinationUrl = URL(fileURLWithPath: movieFilePath)
-
-        // delete old one first
-        do {
-            try FileManager.default.removeItem(at: movieDestinationUrl)
-        } catch {
-            print(error.localizedDescription)
-        }
-
-        // use AVAssetExportSession to export video
-        if let assetExport = AVAssetExportSession(asset: composition, presetName:AVAssetExportPresetHighestQuality) {
-            assetExport.videoComposition = layercomposition
-            assetExport.outputFileType = AVFileType.mov
-            assetExport.outputURL = movieDestinationUrl
-
-            assetExport.exportAsynchronously {
-                switch assetExport.status {
-                    case  .failed:
-                        if let error = assetExport.error {
-                            print("failed \(error)")
-                        }
-                    case .cancelled:
-                        if let error = assetExport.error {
-                            print("cancelled \(error)")
-                        }
-                    default:
-                        print("Movie complete")
-
-                        OperationQueue.main.addOperation {
-                            DispatchQueue.main.async {
-                                self.textOnVideoView.activityIndicator.stopAnimating()
-                                self.saveVideo(url: movieDestinationUrl)
-                            }
-                        }
-                }
-            }
-        }
-    }
 }
 
 extension TextOnVideoViewController: UIImagePickerControllerDelegate {
@@ -243,7 +140,7 @@ extension TextOnVideoViewController: UIImagePickerControllerDelegate {
             }
 
             self.textOnVideoView.activityIndicator.startAnimating()
-            self.drawTextOnVideo(url: mediaURL, text: text)
+            self.videoManager.drawTextOnVideo(url: mediaURL, text: text)
         
         }
         alert.addAction(okAction)
