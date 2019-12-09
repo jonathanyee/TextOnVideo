@@ -31,18 +31,17 @@ struct VideoManager {
         parentlayer.addSublayer(videolayer)
         parentlayer.addSublayer(textLayer)
 
-        let layerComposition = AVMutableVideoComposition()
-        layerComposition.frameDuration = CMTimeMake(value: 1, timescale: 30)
-        layerComposition.renderSize = size
-        layerComposition.animationTool = AVVideoCompositionCoreAnimationTool(postProcessingAsVideoLayer: videolayer, in: parentlayer)
+        let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: videoTrack)
 
-        // instruction for watermark
         let instruction = AVMutableVideoCompositionInstruction()
         instruction.timeRange = CMTimeRangeMake(start: CMTime.zero, duration: composition.duration)
-
-        let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: videoTrack)
         instruction.layerInstructions = [layerInstruction]
-        layerComposition.instructions = [instruction]
+
+        let mainComposition = AVMutableVideoComposition()
+        mainComposition.frameDuration = CMTimeMake(value: 1, timescale: 30)
+        mainComposition.renderSize = size
+        mainComposition.animationTool = AVVideoCompositionCoreAnimationTool(postProcessingAsVideoLayer: videolayer, in: parentlayer)
+        mainComposition.instructions = [instruction]
 
         //  create new file to receive data
         let directoryPaths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
@@ -58,7 +57,7 @@ struct VideoManager {
             }
         }
 
-        self.saveVideo(composition: composition, layerComposition: layerComposition, url: movieDestinationUrl)
+        self.saveVideo(composition: composition, layerComposition: mainComposition, url: movieDestinationUrl)
     }
 
     private func createComposition(from url: URL) -> AVMutableComposition {
