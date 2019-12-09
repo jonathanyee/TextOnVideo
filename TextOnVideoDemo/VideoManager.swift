@@ -124,10 +124,8 @@ struct VideoManager {
                     default:
                         print("Movie complete")
 
-                        OperationQueue.main.addOperation {
-                            DispatchQueue.main.async {
-                                self.onSuccess?(url)
-                            }
+                        DispatchQueue.main.async {
+                            self.onSuccess?(url)
                         }
                 }
             }
