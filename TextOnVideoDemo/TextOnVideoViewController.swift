@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  TextOnVideoViewController.swift
 //  TextOnVideoDemo
 //
 //  Created by Jonathan Yee on 12/7/19.
@@ -10,7 +10,7 @@ import MobileCoreServices
 import Photos
 import UIKit
 
-class ViewController: UIViewController {
+class TextOnVideoViewController: UIViewController {
 
     private let activityIndicator = UIActivityIndicatorView(style: .large)
 
@@ -232,7 +232,7 @@ class ViewController: UIViewController {
     }
 }
 
-extension ViewController: UIImagePickerControllerDelegate {
+extension TextOnVideoViewController: UIImagePickerControllerDelegate {
 
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
@@ -273,4 +273,4 @@ extension ViewController: UIImagePickerControllerDelegate {
 
 }
 
-extension ViewController: UINavigationControllerDelegate { }
+extension TextOnVideoViewController: UINavigationControllerDelegate { }
