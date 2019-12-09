@@ -30,6 +30,7 @@ class TextOnVideoView: UIView {
         self.addSubview(chooseVideoButton)
 
         self.activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        self.activityIndicator.color = UIColor.black
         self.activityIndicator.hidesWhenStopped = true
 
         self.addSubview(self.activityIndicator)

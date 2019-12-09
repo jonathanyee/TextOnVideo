@@ -13,13 +13,15 @@ import UIKit
 class TextOnVideoViewController: UIViewController {
 
     private let textOnVideoView = TextOnVideoView()
+    private var photoAccessManager = PhotoAccessManager()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setup()
+        self.setupView()
+        self.setupPhotoManager()
     }
 
-    private func setup() {
+    private func setupView() {
         self.view.backgroundColor = UIColor.white
 
         self.textOnVideoView.translatesAutoresizingMaskIntoConstraints = false
@@ -35,39 +37,24 @@ class TextOnVideoViewController: UIViewController {
         ])
     }
 
-    @objc private func startPhotoPicker() {
-        self.checkPhotoStatus()
+    private func setupPhotoManager() {
+        self.photoAccessManager.onHasAccess = { [weak self] in
+            let imagePicker = UIImagePickerController()
+            imagePicker.sourceType = .photoLibrary
+            imagePicker.mediaTypes = [kUTTypeMovie as String]
+            imagePicker.allowsEditing = false
+            imagePicker.delegate = self
+
+            self?.present(imagePicker, animated: true, completion: nil)
+        }
+
+        self.photoAccessManager.onAskUserToEnablePhotoPermission = { [weak self] in
+            self?.askUserToEnablePhotoPermission()
+        }
     }
 
-    private func checkPhotoStatus() {
-        let photoAuthorizationStatus = PHPhotoLibrary.authorizationStatus()
-        switch photoAuthorizationStatus {
-            case .authorized:
-                if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
-                    DispatchQueue.main.async {
-                        let imagePicker = UIImagePickerController()
-                        imagePicker.sourceType = .photoLibrary
-                        imagePicker.mediaTypes = [kUTTypeMovie as String]
-                        imagePicker.allowsEditing = false
-                        imagePicker.delegate = self
-
-                        self.present(imagePicker, animated: true, completion: nil)
-                    }
-                }
-                break
-            case .notDetermined:
-                PHPhotoLibrary.requestAuthorization { _ in
-                    self.checkPhotoStatus()
-                }
-                break
-            default:
-                // go to settings
-                DispatchQueue.main.async {
-                    self.askUserToEnablePhotoPermission()
-                }
-
-                break
-        }
+    @objc private func startPhotoPicker() {
+        self.photoAccessManager.checkPhotoStatus()
     }
 
     private func askUserToEnablePhotoPermission() {
