@@ -50,11 +50,12 @@ struct VideoManager {
         let movieFilePath = "\(documentsDirectory)/result.mov"
         let movieDestinationUrl = URL(fileURLWithPath: movieFilePath)
 
-        // delete old one first
-        do {
-            try FileManager.default.removeItem(at: movieDestinationUrl)
-        } catch {
-            print(error.localizedDescription)
+        if FileManager.default.fileExists(atPath: movieDestinationUrl.path) {
+            do {
+                try FileManager.default.removeItem(at: movieDestinationUrl)
+            } catch {
+                print(error.localizedDescription)
+            }
         }
 
         self.saveVideo(composition: composition, layerComposition: layerComposition, url: movieDestinationUrl)
