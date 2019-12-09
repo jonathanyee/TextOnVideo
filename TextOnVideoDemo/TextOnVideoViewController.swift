@@ -92,7 +92,7 @@ class TextOnVideoViewController: UIViewController {
         }
         alertController.addAction(settingsAction)
 
-        self.present(alertController, animated: true, completion: nil)
+        self.present(alertController, animated: true)
     }
 
     private func saveVideo(url: URL) {
@@ -104,13 +104,13 @@ class TextOnVideoViewController: UIViewController {
     @objc func image(_ image: UIImage, didFinishSavingWithError error: NSError?, contextInfo: UnsafeRawPointer) {
         if let error = error {
             print("\(error)")
-            let alert = UIAlertController(title: "Save error", message: error.localizedDescription, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            self.present(alert, animated: true)
+            let alertController = UIAlertController(title: "Save error", message: error.localizedDescription, preferredStyle: .alert)
+            alertController.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(alertController, animated: true)
         } else {
-            let alert = UIAlertController(title: "Saved!", message: "Your video has been saved to Photos app", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            self.present(alert, animated: true)
+            let alertController = UIAlertController(title: "Saved!", message: "Your video has been saved to Photos app", preferredStyle: .alert)
+            alertController.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(alertController, animated: true)
         }
     }
 }
@@ -118,7 +118,7 @@ class TextOnVideoViewController: UIViewController {
 extension TextOnVideoViewController: UIImagePickerControllerDelegate {
 
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        picker.dismiss(animated: true, completion: nil)
+        picker.dismiss(animated: true)
     }
 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
@@ -132,14 +132,14 @@ extension TextOnVideoViewController: UIImagePickerControllerDelegate {
 
         picker.dismiss(animated: true)
 
-        let alert = UIAlertController(title: "Overlay Text", message: "Input text to overlay on your video", preferredStyle: .alert)
-        alert.addTextField { textField in
+        let alertController = UIAlertController(title: "Overlay Text", message: "Input text to overlay on your video", preferredStyle: .alert)
+        alertController.addTextField { textField in
             textField.placeholder = "overlay text"
         }
 
-        let okAction = UIAlertAction(title: "OK", style: .default) { [weak self, weak alert] _ in
+        let okAction = UIAlertAction(title: "OK", style: .default) { [weak self, weak alertController] _ in
             guard
-                let textField = alert?.textFields?.first,
+                let textField = alertController?.textFields?.first,
                 let text = textField.text,
                 let self = self
             else {
@@ -150,8 +150,8 @@ extension TextOnVideoViewController: UIImagePickerControllerDelegate {
             self.videoManager.drawTextOnVideo(url: mediaURL, text: text)
         
         }
-        alert.addAction(okAction)
-        self.present(alert, animated: true)
+        alertController.addAction(okAction)
+        self.present(alertController, animated: true)
     }
 
 }
