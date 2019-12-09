@@ -63,6 +63,8 @@ class TextOnVideoViewController: UIViewController {
         }
 
         self.videoManager.onFailure = { [weak self] error in
+            self?.textOnVideoView.activityIndicator.stopAnimating()
+
             let alertController = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
             alertController.addAction(UIAlertAction(title: "Ok", style: .default))
 
