@@ -12,6 +12,8 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    private let activityIndicator = UIActivityIndicatorView(style: .large)
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setup()
@@ -21,15 +23,23 @@ class ViewController: UIViewController {
         self.view.backgroundColor = UIColor.white
 
         let chooseVideoButton = UIButton(type: .roundedRect)
+        chooseVideoButton.translatesAutoresizingMaskIntoConstraints = false
         chooseVideoButton.setTitle("Select Video", for: .normal)
         chooseVideoButton.addTarget(self, action: #selector(startPhotoPicker), for: .touchUpInside)
         chooseVideoButton.translatesAutoresizingMaskIntoConstraints = false
 
         self.view.addSubview(chooseVideoButton)
 
+        self.activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        self.activityIndicator.hidesWhenStopped = true
+
+        self.view.addSubview(self.activityIndicator)
+
         NSLayoutConstraint.activate([
             chooseVideoButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 15),
-            chooseVideoButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 15)
+            chooseVideoButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 15),
+            self.activityIndicator.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            self.activityIndicator.centerYAnchor.constraint(equalTo: self.view.centerYAnchor)
         ])
     }
 
@@ -210,9 +220,9 @@ class ViewController: UIViewController {
                     default:
                         print("Movie complete")
 
-                        // play video
                         OperationQueue.main.addOperation {
                             DispatchQueue.main.async {
+                                self.activityIndicator.stopAnimating()
                                 self.saveVideo(url: movieDestinationUrl)
                             }
                         }
@@ -245,10 +255,17 @@ extension ViewController: UIImagePickerControllerDelegate {
         }
 
         let okAction = UIAlertAction(title: "OK", style: .default) { [weak self, weak alert] _ in
-            if let textField = alert?.textFields?.first,
-                let text = textField.text {
-                self?.drawTextOnVideo(url: mediaURL, text: text)
+            guard
+                let textField = alert?.textFields?.first,
+                let text = textField.text,
+                let self = self
+            else {
+                return
             }
+
+            self.activityIndicator.startAnimating()
+            self.drawTextOnVideo(url: mediaURL, text: text)
+        
         }
         alert.addAction(okAction)
         self.present(alert, animated: true)
