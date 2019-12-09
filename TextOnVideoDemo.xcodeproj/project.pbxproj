@@ -14,6 +14,7 @@
 		2305E27E239C64AD002639FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2305E27C239C64AD002639FF /* LaunchScreen.storyboard */; };
 		2305E289239C64AD002639FF /* TextOnVideoDemoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2305E288239C64AD002639FF /* TextOnVideoDemoTests.swift */; };
 		2305E294239C64AD002639FF /* TextOnVideoDemoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2305E293239C64AD002639FF /* TextOnVideoDemoUITests.swift */; };
+		23355F53239DD0050054776A /* TextOnVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23355F52239DD0050054776A /* TextOnVideoView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		2305E28F239C64AD002639FF /* TextOnVideoDemoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextOnVideoDemoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2305E293239C64AD002639FF /* TextOnVideoDemoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextOnVideoDemoUITests.swift; sourceTree = "<group>"; };
 		2305E295239C64AD002639FF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		23355F52239DD0050054776A /* TextOnVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextOnVideoView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +105,7 @@
 				2305E27A239C64AD002639FF /* Assets.xcassets */,
 				2305E27C239C64AD002639FF /* LaunchScreen.storyboard */,
 				2305E27F239C64AD002639FF /* Info.plist */,
+				23355F52239DD0050054776A /* TextOnVideoView.swift */,
 			);
 			path = TextOnVideoDemo;
 			sourceTree = "<group>";
@@ -255,6 +258,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				23355F53239DD0050054776A /* TextOnVideoView.swift in Sources */,
 				2305E276239C64AB002639FF /* TextOnVideoViewController.swift in Sources */,
 				2305E272239C64AB002639FF /* AppDelegate.swift in Sources */,
 				2305E274239C64AB002639FF /* SceneDelegate.swift in Sources */,

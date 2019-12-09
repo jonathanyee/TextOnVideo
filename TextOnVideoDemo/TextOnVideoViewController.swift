@@ -12,7 +12,7 @@ import UIKit
 
 class TextOnVideoViewController: UIViewController {
 
-    private let activityIndicator = UIActivityIndicatorView(style: .large)
+    private let textOnVideoView = TextOnVideoView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,24 +22,16 @@ class TextOnVideoViewController: UIViewController {
     private func setup() {
         self.view.backgroundColor = UIColor.white
 
-        let chooseVideoButton = UIButton(type: .roundedRect)
-        chooseVideoButton.translatesAutoresizingMaskIntoConstraints = false
-        chooseVideoButton.setTitle("Select Video", for: .normal)
-        chooseVideoButton.addTarget(self, action: #selector(startPhotoPicker), for: .touchUpInside)
-        chooseVideoButton.translatesAutoresizingMaskIntoConstraints = false
-
-        self.view.addSubview(chooseVideoButton)
-
-        self.activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-        self.activityIndicator.hidesWhenStopped = true
-
-        self.view.addSubview(self.activityIndicator)
+        self.textOnVideoView.translatesAutoresizingMaskIntoConstraints = false
+        self.textOnVideoView.chooseVideoButton.addTarget(self, action: #selector(startPhotoPicker), for: .touchUpInside)
+        
+        self.view.addSubview(self.textOnVideoView)
 
         NSLayoutConstraint.activate([
-            chooseVideoButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 15),
-            chooseVideoButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 15),
-            self.activityIndicator.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            self.activityIndicator.centerYAnchor.constraint(equalTo: self.view.centerYAnchor)
+            self.textOnVideoView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            self.textOnVideoView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            self.textOnVideoView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+            self.textOnVideoView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
         ])
     }
 
@@ -222,7 +214,7 @@ class TextOnVideoViewController: UIViewController {
 
                         OperationQueue.main.addOperation {
                             DispatchQueue.main.async {
-                                self.activityIndicator.stopAnimating()
+                                self.textOnVideoView.activityIndicator.stopAnimating()
                                 self.saveVideo(url: movieDestinationUrl)
                             }
                         }
@@ -263,7 +255,7 @@ extension TextOnVideoViewController: UIImagePickerControllerDelegate {
                 return
             }
 
-            self.activityIndicator.startAnimating()
+            self.textOnVideoView.activityIndicator.startAnimating()
             self.drawTextOnVideo(url: mediaURL, text: text)
         
         }
