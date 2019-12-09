@@ -61,6 +61,13 @@ class TextOnVideoViewController: UIViewController {
             self?.textOnVideoView.activityIndicator.stopAnimating()
             self?.saveVideo(url: url)
         }
+
+        self.videoManager.onFailure = { [weak self] error in
+            let alertController = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+            alertController.addAction(UIAlertAction(title: "Ok", style: .default))
+
+            self?.present(alertController, animated: true)
+        }
     }
 
     @objc private func startPhotoPicker() {

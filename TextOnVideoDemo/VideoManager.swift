@@ -13,6 +13,7 @@ import UIKit
 struct VideoManager {
 
     var onSuccess: ((URL) -> Void)?
+    var onFailure: ((Error) -> Void)?
 
     func drawTextOnVideo(url: URL, text: String) {
         let composition = AVMutableComposition()
@@ -25,27 +26,20 @@ struct VideoManager {
         let audioTrack = audioTracks[0]
         let audioTimeRange = CMTimeRangeMake(start: CMTime.zero, duration: videoAsset.duration)
 
-        if let compositionvideoTrack = composition.addMutableTrack(withMediaType: AVMediaType.video, preferredTrackID: CMPersistentTrackID()) {
+        if let compositionvideoTrack = composition.addMutableTrack(withMediaType: AVMediaType.video, preferredTrackID: CMPersistentTrackID()),
+            let compositionAudioTrack = composition.addMutableTrack(withMediaType: AVMediaType.audio, preferredTrackID: CMPersistentTrackID()) {
 
             let videoTimeRange = CMTimeRangeMake(start: CMTime.zero, duration: videoAsset.duration)
 
             do {
                 try compositionvideoTrack.insertTimeRange(videoTimeRange, of: videoTrack, at: CMTime.zero)
-            } catch {
-                print(error)
-            }
+                compositionvideoTrack.preferredTransform = videoTrack.preferredTransform
 
-            compositionvideoTrack.preferredTransform = videoTrack.preferredTransform
-
-            if let compositionAudioTrack:AVMutableCompositionTrack = composition.addMutableTrack(withMediaType: AVMediaType.audio, preferredTrackID: CMPersistentTrackID()) {
-
-                do {
-                    try compositionAudioTrack.insertTimeRange(audioTimeRange, of: audioTrack, at: CMTime.zero)
-                } catch {
-                    print(error)
-                }
-
+                try compositionAudioTrack.insertTimeRange(audioTimeRange, of: audioTrack, at: CMTime.zero)
                 compositionvideoTrack.preferredTransform = audioTrack.preferredTransform
+            } catch {
+                self.onFailure?(error)
+                print(error)
             }
         }
 
@@ -105,10 +99,12 @@ struct VideoManager {
                 switch assetExport.status {
                     case  .failed:
                         if let error = assetExport.error {
+                            self.onFailure?(error)
                             print("failed \(error)")
                         }
                     case .cancelled:
                         if let error = assetExport.error {
+                            self.onFailure?(error)
                             print("cancelled \(error)")
                         }
                     default:
